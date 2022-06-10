@@ -33,6 +33,8 @@ contract TrusterLenderPool is ReentrancyGuard {
         require(balanceBefore >= borrowAmount, "Not enough tokens in pool");
         
         damnValuableToken.transfer(borrower, borrowAmount);
+        //what if the target is dvt token and the function called is approve function?
+        // The borrower could be the pool contract as well. Then we're able to transfer these tokens on a second transaction!
         target.functionCall(data);
 
         uint256 balanceAfter = damnValuableToken.balanceOf(address(this));
