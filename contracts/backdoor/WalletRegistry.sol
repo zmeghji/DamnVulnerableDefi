@@ -10,7 +10,7 @@ import "@gnosis.pm/safe-contracts/contracts/proxies/IProxyCreationCallback.sol";
  * @title WalletRegistry
  * @notice A registry for Gnosis Safe wallets.
            When known beneficiaries deploy and register their wallets, the registry sends some Damn Valuable Tokens to the wallet.
- * @dev The registry has embedded verifications to ensure only legitimate Gnosis Safe wallets are stored.
+ * @dev The registry has embedded verificrfations to ensure only legitimate Gnosis Safe wallets are stored.
  * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
  */
 contract WalletRegistry is IProxyCreationCallback, Ownable {
@@ -61,6 +61,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
     function proxyCreated(
         GnosisSafeProxy proxy,
         address singleton,
+        //solution may havesomething to do with this initializer
         bytes calldata initializer,
         uint256
     ) external override {
